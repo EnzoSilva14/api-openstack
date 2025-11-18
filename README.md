@@ -2,15 +2,6 @@
 
 API desenvolvida em FastAPI para gerenciar URLs de imagens obtidas de uma API pública.
 
-## ⚠️ Configuração do Banco de Dados
-
-- **Host**: 192.169.0.84
-- **Banco**: minhadb
-- **Usuário**: api_user
-- **Senha**: senha_forte_123
-
-**IMPORTANTE**: Se você está tendo problemas de conexão com o banco, leia o arquivo [`CONFIGURACAO_BANCO.md`](CONFIGURACAO_BANCO.md) para instruções detalhadas.
-
 ### Testar Conexão com o Banco
 
 Antes de executar a API, teste a conexão:
