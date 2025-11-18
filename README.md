@@ -33,6 +33,21 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 
 A API irá iniciar **mesmo se o banco não estiver disponível**, permitindo testar o endpoint de hostname.
 
+## 🎨 Frontend Web
+
+Após iniciar a API, acesse a interface web em:
+
+### **http://localhost:8000/app** ⬅️ ACESSE AQUI!
+
+O frontend permite:
+- ✅ Ver status da API e banco em tempo real
+- ✅ Fazer upload de imagens da API pública
+- ✅ Listar todas as tags
+- ✅ Buscar imagens por ID
+- ✅ Visualizar galeria completa de imagens
+
+📖 **Guia completo**: Leia [`COMO_USAR.md`](COMO_USAR.md) para instruções detalhadas
+
 ## Endpoints
 
 ### GET /
@@ -44,6 +59,11 @@ Retorna o hostname da máquina para verificar balanceamento de carga.
   "hostname": "api1"
 }
 ```
+
+### GET /app
+Serve a interface web (frontend) da aplicação.
+
+Acesse no navegador: **http://localhost:8000/app**
 
 ### GET /health
 Verifica o status da API e a conexão com o banco de dados.

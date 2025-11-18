@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API de Imagens - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .status-bar {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .status-item {
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .status-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .status-value {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .badge-online {
+            background: #10b981;
+            color: white;
+        }
+
+        .badge-offline {
+            background: #ef4444;
+            color: white;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-icon {
+            font-size: 1.2em;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1em;
+            margin-top: 10px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .result pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #374151;
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .image-card {
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            border: 2px solid #e5e7eb;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .image-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .image-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .image-info {
+            font-size: 0.85em;
+            color: #6b7280;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin: 5px 2px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fee2e2;
+            border-left: 4px solid #ef4444;
+            padding: 12px;
+            border-radius: 5px;
+            color: #991b1b;
+            margin-top: 10px;
+        }
+
+        .success {
+            background: #d1fae5;
+            border-left: 4px solid #10b981;
+            padding: 12px;
+            border-radius: 5px;
+            color: #065f46;
+            margin-top: 10px;
+        }
+
+        .config-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .config-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🖼️ API de Imagens Dashboard</h1>
+            <p class="subtitle">Teste todos os endpoints da sua API FastAPI</p>
+        </header>
+
+        <div class="config-section">
+            <h3>⚙️ Configuração</h3>
+            <label for="apiUrl">URL da API:</label>
+            <input type="text" id="apiUrl" value="http://localhost:8000" placeholder="http://localhost:8000">
+        </div>
+
+        <div class="status-bar" id="statusBar">
+            <div class="status-item">
+                <div class="status-label">Status da API</div>
+                <div class="status-value"><span class="loading"></span></div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">Hostname</div>
+                <div class="status-value">--</div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">Banco de Dados</div>
+                <div class="status-value">--</div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <!-- Card 1: Upload -->
+            <div class="card">
+                <h2><span class="card-icon">📤</span> Upload de Imagem</h2>
+                <p>Busca uma imagem da API pública e salva no banco</p>
+                <button onclick="uploadImagem()">Buscar e Salvar Imagem</button>
+                <div id="uploadResult" class="result" style="display:none;"></div>
+            </div>
+
+            <!-- Card 2: Listar Tags -->
+            <div class="card">
+                <h2><span class="card-icon">🏷️</span> Listar Tags</h2>
+                <p>Mostra todas as tags armazenadas no banco</p>
+                <button onclick="listarTags()">Listar Tags</button>
+                <div id="tagsResult" class="result" style="display:none;"></div>
+            </div>
+
+            <!-- Card 3: Mostrar por ID -->
+            <div class="card">
+                <h2><span class="card-icon">🔍</span> Buscar por ID</h2>
+                <p>Busca uma imagem específica pelo ID</p>
+                <input type="number" id="imageId" placeholder="Digite o ID da imagem" min="1">
+                <button onclick="mostrarImagem()">Buscar Imagem</button>
+                <div id="showResult" class="result" style="display:none;"></div>
+            </div>
+        </div>
+
+        <!-- Card Grande: Todas as Imagens -->
+        <div class="card">
+            <h2><span class="card-icon">🖼️</span> Todas as Imagens</h2>
+            <p>Visualize todas as imagens armazenadas no banco de dados</p>
+            <button onclick="listarImagens()">Carregar Todas as Imagens</button>
+            <div id="imagensResult"></div>
+        </div>
+
+        <footer>
+            <p>Desenvolvido com FastAPI + HTML/CSS/JavaScript</p>
+            <p>🐕 Usando Dog CEO API para imagens de cachorros</p>
+        </footer>
+    </div>
+
+    <script>
+        // Carregar status ao iniciar
+        window.onload = function() {
+            carregarStatus();
+            setInterval(carregarStatus, 5000); // Atualizar a cada 5 segundos
+        };
+
+        function getApiUrl() {
+            return document.getElementById('apiUrl').value;
+        }
+
+        async function carregarStatus() {
+            const apiUrl = getApiUrl();
+            const statusBar = document.getElementById('statusBar');
+            
+            try {
+                // Testar endpoint raiz (hostname)
+                const hostnameResponse = await fetch(`${apiUrl}/`);
+                const hostnameData = await hostnameResponse.json();
+                
+                // Testar endpoint health
+                const healthResponse = await fetch(`${apiUrl}/health`);
+                const healthData = await healthResponse.json();
+                
+                // Atualizar status bar
+                statusBar.innerHTML = `
+                    <div class="status-item">
+                        <div class="status-label">Status da API</div>
+                        <div class="status-value">
+                            <span class="status-badge badge-online">ONLINE</span>
+                        </div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Hostname</div>
+                        <div class="status-value">${healthData.hostname || hostnameData.hostname}</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Banco de Dados</div>
+                        <div class="status-value">
+                            <span class="status-badge ${healthData.database === 'connected' ? 'badge-online' : 'badge-offline'}">
+                                ${healthData.database === 'connected' ? 'CONECTADO' : 'DESCONECTADO'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                statusBar.innerHTML = `
+                    <div class="status-item">
+                        <div class="status-label">Status da API</div>
+                        <div class="status-value">
+                            <span class="status-badge badge-offline">OFFLINE</span>
+                        </div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">Erro</div>
+                        <div class="status-value" style="font-size: 0.9em; color: #ef4444;">
+                            Não foi possível conectar à API
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        async function uploadImagem() {
+            const apiUrl = getApiUrl();
+            const resultDiv = document.getElementById('uploadResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div class="loading"></div> Buscando imagem...';
+            
+            try {
+                const response = await fetch(`${apiUrl}/upload`, {
+                    method: 'POST'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Erro: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `
+                    <div class="success">✅ ${data.message}</div>
+                    <div style="margin-top: 10px;">
+                        <strong>ID:</strong> ${data.id}<br>
+                        <strong>Tag:</strong> <span class="tag">${data.tag}</span><br>
+                        <strong>URL:</strong> <a href="${data.url}" target="_blank" style="color: #667eea; word-break: break-all;">${data.url}</a>
+                    </div>
+                    <img src="${data.url}" alt="Dog" style="width: 100%; margin-top: 10px; border-radius: 8px;">
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erro: ${error.message}</div>`;
+            }
+        }
+
+        async function listarTags() {
+            const apiUrl = getApiUrl();
+            const resultDiv = document.getElementById('tagsResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div class="loading"></div> Carregando tags...';
+            
+            try {
+                const response = await fetch(`${apiUrl}/listar`);
+                
+                if (!response.ok) {
+                    throw new Error(`Erro: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.tags.length === 0) {
+                    resultDiv.innerHTML = '<p style="color: #6b7280;">Nenhuma tag encontrada. Faça upload de imagens primeiro!</p>';
+                } else {
+                    const tagsHtml = data.tags.map(tag => `<span class="tag">${tag}</span>`).join(' ');
+                    resultDiv.innerHTML = `
+                        <div class="success">✅ ${data.tags.length} tag(s) encontrada(s)</div>
+                        <div style="margin-top: 10px;">${tagsHtml}</div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erro: ${error.message}</div>`;
+            }
+        }
+
+        async function mostrarImagem() {
+            const apiUrl = getApiUrl();
+            const imageId = document.getElementById('imageId').value;
+            const resultDiv = document.getElementById('showResult');
+            
+            if (!imageId) {
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = '<div class="error">⚠️ Por favor, digite um ID</div>';
+                return;
+            }
+            
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<div class="loading"></div> Buscando imagem...';
+            
+            try {
+                const response = await fetch(`${apiUrl}/mostrar/${imageId}`);
+                
+                if (response.status === 404) {
+                    throw new Error('Imagem não encontrada');
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`Erro: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                resultDiv.innerHTML = `
+                    <div class="success">✅ Imagem encontrada!</div>
+                    <div style="margin-top: 10px;">
+                        <strong>ID:</strong> ${data.id}<br>
+                        <strong>Tag:</strong> <span class="tag">${data.tag}</span><br>
+                        <strong>URL:</strong> <a href="${data.url}" target="_blank" style="color: #667eea; word-break: break-all;">${data.url}</a>
+                    </div>
+                    <img src="${data.url}" alt="Dog" style="width: 100%; margin-top: 10px; border-radius: 8px;">
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erro: ${error.message}</div>`;
+            }
+        }
+
+        async function listarImagens() {
+            const apiUrl = getApiUrl();
+            const resultDiv = document.getElementById('imagensResult');
+            resultDiv.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="loading"></div> Carregando imagens...</div>';
+            
+            try {
+                const response = await fetch(`${apiUrl}/imagens`);
+                
+                if (!response.ok) {
+                    throw new Error(`Erro: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.length === 0) {
+                    resultDiv.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 20px;">Nenhuma imagem encontrada. Faça upload de imagens primeiro!</p>';
+                } else {
+                    const imagensHtml = data.map(img => `
+                        <div class="image-card">
+                            <img src="${img.url}" alt="${img.tag}" onerror="this.src='https://via.placeholder.com/200?text=Erro+ao+carregar'">
+                            <div class="image-info">
+                                <strong>ID:</strong> ${img.id}<br>
+                                <span class="tag">${img.tag}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    resultDiv.innerHTML = `
+                        <div class="success" style="margin-bottom: 15px;">✅ ${data.length} imagem(ns) encontrada(s)</div>
+                        <div class="image-grid">${imagensHtml}</div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Erro: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
+

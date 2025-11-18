@@ -1,19 +1,29 @@
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, FileResponse
 from sqlalchemy.orm import Session
 import socket
 import httpx
 from typing import List
 from pydantic import BaseModel
 import logging
+import os
 
 from database import engine, get_db, Base
 from models import Imagem
 
-# Configurar logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="API de Imagens")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.on_event("startup")
 async def startup_event():
@@ -55,6 +65,23 @@ def get_hostname():
     """
     hostname = socket.gethostname()
     return {"hostname": hostname}
+
+@app.get("/app", response_class=HTMLResponse)
+async def get_frontend():
+    """
+    Serve o frontend da aplicação.
+    Acesse http://localhost:8000/app para usar a interface web.
+    """
+    frontend_path = os.path.join(os.path.dirname(__file__), "frontend.html")
+    
+    if os.path.exists(frontend_path):
+        with open(frontend_path, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    else:
+        return HTMLResponse(
+            content="<h1>Frontend não encontrado</h1><p>O arquivo frontend.html não foi encontrado.</p>",
+            status_code=404
+        )
 
 @app.get("/health")
 def health_check():
