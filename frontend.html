@@ -405,13 +405,15 @@
             const statusBar = document.getElementById('statusBar');
             
             try {
-                const hostnameResponse = await fetch(`${apiUrl}/`);
-                const hostnameData = await hostnameResponse.json();
-                
+                // Usar apenas /health que retorna tudo que precisamos
                 const healthResponse = await fetch(`${apiUrl}/health`);
-                const healthData = await healthResponse.json();
                 
-                const hostname = healthData.hostname || hostnameData.hostname;
+                if (!healthResponse.ok) {
+                    throw new Error(`HTTP ${healthResponse.status}`);
+                }
+                
+                const healthData = await healthResponse.json();
+                const hostname = healthData.hostname;
                 
                 const hostnameDisplay = document.getElementById('hostnameDisplay');
                 hostnameDisplay.textContent = hostname;
