@@ -40,6 +40,34 @@
             opacity: 0.9;
         }
 
+        .hostname-display {
+            background: white;
+            border-radius: 15px;
+            padding: 20px 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .hostname-display h2 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .hostname-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #764ba2;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            font-family: 'Courier New', monospace;
+            padding: 15px;
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            border-radius: 10px;
+            display: inline-block;
+            min-width: 200px;
+        }
+
         .status-bar {
             background: white;
             border-radius: 15px;
@@ -284,13 +312,24 @@
         <div class="config-section">
             <h3>⚙️ Configuração</h3>
             <label for="apiUrl">URL da API:</label>
-            <input type="text" id="apiUrl" value="http://localhost:8080" placeholder="http://localhost:8000">
+            <input type="text" id="apiUrl" value="http://localhost:8000" placeholder="http://localhost:8000">
+        </div>
+
+        <div class="hostname-display">
+            <h2>🖥️ Servidor Atual</h2>
+            <div class="hostname-value" id="hostnameDisplay">--</div>
+            <p style="color: #6b7280; margin-top: 10px; font-size: 0.9em;">
+                Útil para verificar balanceamento de carga entre servidores
+            </p>
+            <button onclick="carregarStatus()" style="margin-top: 10px; width: auto; padding: 8px 20px; font-size: 0.9em;">
+                🔄 Atualizar Servidor
+            </button>
         </div>
 
         <div class="status-bar" id="statusBar">
             <div class="status-item">
                 <div class="status-label">Status da API</div>
-                <div class="status-value"><span class="loading"></span></div>
+                <div class="status-value"><span class="loading"></span> Carregando...</div>
             </div>
             <div class="status-item">
                 <div class="status-label">Hostname</div>
@@ -346,6 +385,13 @@
     <script>
         // Carregar status ao iniciar
         window.onload = function() {
+            // Detectar automaticamente a URL da API
+            const apiUrlInput = document.getElementById('apiUrl');
+            if (window.location.pathname === '/app') {
+                // Se estamos sendo servidos pela API, usar a mesma origem
+                apiUrlInput.value = window.location.origin;
+            }
+            
             carregarStatus();
             setInterval(carregarStatus, 5000); // Atualizar a cada 5 segundos
         };
@@ -359,15 +405,17 @@
             const statusBar = document.getElementById('statusBar');
             
             try {
-                // Testar endpoint raiz (hostname)
                 const hostnameResponse = await fetch(`${apiUrl}/`);
                 const hostnameData = await hostnameResponse.json();
                 
-                // Testar endpoint health
                 const healthResponse = await fetch(`${apiUrl}/health`);
                 const healthData = await healthResponse.json();
                 
-                // Atualizar status bar
+                const hostname = healthData.hostname || hostnameData.hostname;
+                
+                const hostnameDisplay = document.getElementById('hostnameDisplay');
+                hostnameDisplay.textContent = hostname;
+                hostnameDisplay.style.color = '#764ba2'; 
                 statusBar.innerHTML = `
                     <div class="status-item">
                         <div class="status-label">Status da API</div>
@@ -377,7 +425,7 @@
                     </div>
                     <div class="status-item">
                         <div class="status-label">Hostname</div>
-                        <div class="status-value">${healthData.hostname || hostnameData.hostname}</div>
+                        <div class="status-value">${hostname}</div>
                     </div>
                     <div class="status-item">
                         <div class="status-label">Banco de Dados</div>
@@ -389,6 +437,10 @@
                     </div>
                 `;
             } catch (error) {
+                console.error('Erro ao carregar status:', error);
+                document.getElementById('hostnameDisplay').textContent = 'OFFLINE';
+                document.getElementById('hostnameDisplay').style.color = '#ef4444';
+                
                 statusBar.innerHTML = `
                     <div class="status-item">
                         <div class="status-label">Status da API</div>
@@ -399,7 +451,7 @@
                     <div class="status-item">
                         <div class="status-label">Erro</div>
                         <div class="status-value" style="font-size: 0.9em; color: #ef4444;">
-                            Não foi possível conectar à API
+                            ${error.message || 'Não foi possível conectar à API'}
                         </div>
                     </div>
                 `;
