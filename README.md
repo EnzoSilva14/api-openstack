@@ -19,7 +19,7 @@ pip install -r requirements.txt
 
 2. Execute a aplicação:
 ```bash
-uvicorn main:app --host 0.0.0.0 --port 8000
+uvicorn main:app --host 0.0.0.0 --port 8080
 ```
 
 A API irá iniciar **mesmo se o banco não estiver disponível**, permitindo testar o endpoint de hostname.
@@ -28,7 +28,7 @@ A API irá iniciar **mesmo se o banco não estiver disponível**, permitindo tes
 
 Após iniciar a API, acesse a interface web em:
 
-### **http://localhost:8000/app** ⬅️ ACESSE AQUI!
+### **http://localhost:8080/app** ⬅️ ACESSE AQUI!
 
 O frontend permite:
 - ✅ Ver status da API e banco em tempo real
@@ -54,7 +54,7 @@ Retorna o hostname da máquina para verificar balanceamento de carga.
 ### GET /app
 Serve a interface web (frontend) da aplicação.
 
-Acesse no navegador: **http://localhost:8000/app**
+Acesse no navegador: **http://localhost:8080/app**
 
 ### GET /health
 Verifica o status da API e a conexão com o banco de dados.
